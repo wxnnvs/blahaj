@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blahaj</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: rgb(0, 190, 230);
+        }
+
+        img {
+            position: absolute;
+            top: 35%;
+            left: 49%;
+            transform: translate(-50%, -50%);
+            max-width: 100%;
+            max-height: 50vh;
+            width: auto;
+            height: auto;
+            z-index: 1;
+            border: 0;
+            margin: 0;
+            padding: 0;
+            display: block;
+            background: transparent;
+            transition-duration: .4s;
+            cursor: pointer;
+        }
+
+        #quotes {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        #bookmarkedQuotes {
+            position: absolute;
+            top: 90%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <img id="blahaj" src="blahaj3.png">
+    </div>
+    <div id="quotes">
+
+    </div>
+    <button onclick="bookmarkQuote()">Bookmark this quote</button>
+    <button onclick="showBookmarks()">Show bookmarked quotes</button>
+    <div id="bookmarkedQuotes"></div>
+</body>
+<script>
+    function fetchQuote() {
+        // use https://api.forismatic.com/api/1.0/ to get a random quote and display it
+        fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en'), {
+            method: 'POST'
+        })
+            .then(response => response.json())
+            .then(data => {
+                const quote = JSON.parse(data.contents);
+
+                // Append quote to localStorage
+                let quotesList = JSON.parse(localStorage.getItem('quotesList')) || [];
+                quotesList.push(quote);
+                localStorage.setItem('quotesList', JSON.stringify(quotesList));
+            })
+            .catch(error => console.error('Error fetching the quote:', error));
+    }
+
+    // Fetch quotes every 3 seconds
+    setInterval(fetchQuote, 3000);
+
+    function showQuote() {
+        document.getElementById('quotes').innerHTML = 'Thinking...';
+
+        const quotesList = JSON.parse(localStorage.getItem('quotesList')) || [];
+        if (quotesList.length === 0) {
+            document.getElementById('quotes').innerHTML = 'No quotes available. Please wait...';
+            return;
+        }
+
+        let quoteToShow = JSON.parse(localStorage.getItem('quoteToShow')) || 0;
+        const quote = quotesList[quoteToShow];
+
+        document.getElementById('quotes').innerHTML = `
+            <p>"${quote.quoteText}"</p>
+            <p>~ ${quote.quoteAuthor}</p>
+        `;
+
+        quoteToShow = (quoteToShow + 1) % quotesList.length;
+        localStorage.setItem('quoteToShow', quoteToShow);
+    }
+
+    function bookmarkQuote() {
+        const quotesList = JSON.parse(localStorage.getItem('quotesList')) || [];
+        if (quotesList.length === 0) {
+            document.getElementById('quotes').innerHTML = 'No quotes available. Please wait...';
+            return;
+        }
+
+        let quoteToShow = JSON.parse(localStorage.getItem('quoteToShow')) || 0;
+        const quote = quotesList[quoteToShow];
+
+        // Append quote to localStorage
+        let bookmarkedQuotesList = JSON.parse(localStorage.getItem('bookmarkedQuotesList')) || [];
+        bookmarkedQuotesList.push(quote);
+        localStorage.setItem('bookmarkedQuotesList', JSON.stringify(bookmarkedQuotesList));
+    }
+
+    function showBookmarks() {
+        const bookmarkedQuotesList = JSON.parse(localStorage.getItem('bookmarkedQuotesList')) || [];
+        if (bookmarkedQuotesList.length === 0) {
+            document.getElementById('bookmarkedQuotes').innerHTML = 'No bookmarked quotes available.';
+            return;
+        }
+
+        document.getElementById('bookmarkedQuotes').innerHTML = '';
+        bookmarkedQuotesList.forEach(quote => {
+            document.getElementById('bookmarkedQuotes').innerHTML += `
+                <p>"${quote.quoteText}"</p>
+                <p>~ ${quote.quoteAuthor}</p>
+            `;
+        });
+    }
+
+    document.getElementById('blahaj').addEventListener('click', showQuote);
+</script>
+
+</html>

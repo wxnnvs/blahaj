@@ -47,52 +47,30 @@
 
 <body>
     <div>
-        <img id="blahaj" src="blahaj3.png">
+        <img id="blahaj" src="https://wxnnvs.ftp.sh/blahaj/blahaj3.png">
     </div>
-    <div id="quotes">
-
-    </div>
+    <div id="quotes">"Click me..."</div>
 </body>
 <script>
-    function fetchQuote() {
-        // use https://api.forismatic.com/api/1.0/ to get a random quote and display it
+
+    function showQuote() {
+        document.getElementById('quotes').innerHTML = 'Thinking...';
+
+        let quote = "";
+
         fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en'), {
             method: 'POST'
         })
             .then(response => response.json())
             .then(data => {
-                const quote = JSON.parse(data.contents);
+                quote = JSON.parse(data.contents);
 
-                // Append quote to localStorage
-                let quotesList = JSON.parse(localStorage.getItem('quotesList')) || [];
-                quotesList.push(quote);
-                localStorage.setItem('quotesList', JSON.stringify(quotesList));
+                document.getElementById('quotes').innerHTML = `
+                    <p>"${quote.quoteText}"</p>
+                    <p>~ ${quote.quoteAuthor}</p>
+                `;
             })
             .catch(error => console.error('Error fetching the quote:', error));
-    }
-
-    // Fetch quotes every 3 seconds
-    setInterval(fetchQuote, 3000);
-
-    function showQuote() {
-        document.getElementById('quotes').innerHTML = 'Thinking...';
-
-        const quotesList = JSON.parse(localStorage.getItem('quotesList')) || [];
-        if (quotesList.length === 0) {
-            document.getElementById('quotes').innerHTML = 'No quotes available. Please wait...';
-            return;
-        }
-
-        let quoteToShow = JSON.parse(localStorage.getItem('quoteToShow')) || 0;
-        const quote = quotesList[quoteToShow];
-
-        document.getElementById('quotes').innerHTML = `
-            <p>"${quote.quoteText}"</p>
-            <p>~ ${quote.quoteAuthor}</p>
-        `;
-
-        quoteToShow = (quoteToShow + 1) % quotesList.length;
-        localStorage.setItem('quoteToShow', quoteToShow);
     }
 
     document.getElementById('blahaj').addEventListener('click', showQuote);
